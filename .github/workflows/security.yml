@@ -7,16 +7,11 @@ on:
 jobs:
   security-scan:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install AWS CLI (Official Method)
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install
+      # ✅ No need to install AWS CLI
 
       - name: Install Checkov (IaC security)
         run: pip install checkov
