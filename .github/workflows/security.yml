@@ -1,12 +1,33 @@
-name: Security Workflow
+name: Security Scan & Deploy
 
 on:
   push:
     branches: [main]
 
 jobs:
-  build:
+  security-scan:
     runs-on: ubuntu-latest
     steps:
-      - name: Placeholder
-        run: echo "Workflow will be added soon"
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install AWS CLI
+        run: sudo apt-get install awscli -y
+
+      - name: Install Checkov (IaC security)
+        run: pip install checkov
+
+      - name: Run Security Scan
+        run: |
+          checkov -d . --output html > report.html
+
+      - name: Upload to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws s3 cp report.html s3://security-dashboard-report/index.html --region ap-southeast-1
+
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id YOUR_DISTRO_ID --paths "/index.html"
